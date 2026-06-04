@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* ─── Base font scaling (mobile-first) ─── */
+html {
+  font-size: 87.5%; /* 14px base on mobile */
+  scroll-behavior: smooth;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 100%; /* 16px base on tablet+ */
+  }
+}
+
+/* ─── Smooth scroll offset for fixed nav ─── */
+[id] {
+  scroll-margin-top: 72px;
+}
+
+/* ─── Remove number input spinners ─── */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
