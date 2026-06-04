@@ -9,11 +9,11 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-white min-h-[90vh] flex items-center pt-24 pb-16 lg:pt-32 lg:pb-24">
+    <section className="relative w-full overflow-hidden bg-white min-h-[90vh] flex items-center pt-20 pb-8 lg:pt-32 lg:pb-24">
       {/* Deep Navy Slanted Background */}
       <div 
-        className="absolute top-0 left-0 w-full h-[85%] bg-[#1E3A5F] z-0"
-        style={{ clipPath: 'polygon(0 0, 100% 0, 100% 75%, 0 100%)' }}
+        className="absolute inset-0 w-full h-full bg-[#1E3A5F] z-0"
+        style={{ clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)' }}
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 w-full h-full">
@@ -61,7 +61,7 @@ export default function Hero() {
 
           {/* Right Image Content - The Truck */}
           <motion.div 
-            className="flex-1 w-full relative h-[400px] lg:h-[600px] flex items-end justify-center lg:justify-end"
+            className="flex-1 w-full relative mt-8 lg:mt-0 flex items-end justify-center lg:justify-end"
             initial={{ opacity: 0, x: 50, y: 20 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
@@ -70,7 +70,7 @@ export default function Hero() {
               In a real scenario, this would be a transparent PNG.
               Using a generic high-quality moving truck placeholder styling to match the vibe. 
             */}
-            <div className="relative w-full max-w-[600px] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl transform lg:translate-y-12">
+            <div className="relative w-full max-w-[600px] h-[260px] sm:h-[360px] lg:h-auto lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl transform lg:translate-y-12">
                <Image 
                   src="/truck.png" 
                   alt="Safe Giant Moving Truck" 
@@ -82,8 +82,8 @@ export default function Hero() {
             </div>
             
             {/* Floating Orange Badge (Logisco Style) */}
-            <div className="absolute bottom-4 left-4 lg:-left-8 bg-[#F97316] text-white p-6 rounded-2xl shadow-xl transform lg:translate-y-12 animate-bounce-slow">
-              <p className="text-4xl font-bold">20+</p>
+            <div className="absolute -bottom-4 lg:bottom-4 left-4 lg:-left-8 bg-[#F97316] text-white p-4 lg:p-6 rounded-2xl shadow-xl transform lg:translate-y-12 animate-bounce-slow">
+              <p className="text-2xl lg:text-4xl font-bold">20+</p>
               <p className="text-sm font-semibold opacity-90">Years of<br/>Experience</p>
             </div>
           </motion.div>

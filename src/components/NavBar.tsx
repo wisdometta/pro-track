@@ -27,7 +27,7 @@ export default function NavBar() {
   return (
     <nav
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
+        isScrolled || menuOpen ? 'bg-white shadow-md' : 'bg-transparent'
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -45,7 +45,7 @@ export default function NavBar() {
               <div className="w-9 h-9 bg-[#1E3A5F] rounded-lg flex items-center justify-center text-white font-bold text-sm">
                 SG
               </div>
-              <span className={`font-bold text-lg tracking-tight ${isScrolled ? 'text-[#1E3A5F]' : 'text-white'}`}>
+              <span className={`font-bold text-lg tracking-tight ${isScrolled || menuOpen ? 'text-[#1E3A5F]' : 'text-white'}`}>
                 Safe Giant Movers
               </span>
             </div>
@@ -79,9 +79,9 @@ export default function NavBar() {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          <span className={`block w-6 h-0.5 mb-1.5 transition-all ${isScrolled ? 'bg-gray-800' : 'bg-white'}`} />
-          <span className={`block w-6 h-0.5 mb-1.5 transition-all ${isScrolled ? 'bg-gray-800' : 'bg-white'}`} />
-          <span className={`block w-6 h-0.5 transition-all ${isScrolled ? 'bg-gray-800' : 'bg-white'}`} />
+          <span className={`block w-6 h-0.5 mb-1.5 transition-all ${isScrolled || menuOpen ? 'bg-gray-800' : 'bg-white'}`} />
+          <span className={`block w-6 h-0.5 mb-1.5 transition-all ${isScrolled || menuOpen ? 'bg-gray-800' : 'bg-white'}`} />
+          <span className={`block w-6 h-0.5 transition-all ${isScrolled || menuOpen ? 'bg-gray-800' : 'bg-white'}`} />
         </button>
       </div>
 

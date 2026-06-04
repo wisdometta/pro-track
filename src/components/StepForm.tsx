@@ -172,7 +172,7 @@ export default function StepForm() {
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Form area */}
               <div className="flex-1 max-w-2xl mx-auto lg:mx-0 w-full">
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-8">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-8">
                   <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
                   <div className="mt-4">
