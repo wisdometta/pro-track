@@ -30,25 +30,25 @@ export default function Hero() {
               ✦ Safe Giant Moving Inc.
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
-              Welcome to <span className="text-[#F97316]">Safe Giant</span> <br className="hidden lg:block"/> Moving Services
+              Safe Giant Movers: <br className="hidden lg:block"/> Your Trusted <span className="text-[#F97316]">Hourly Moving Experts</span>
             </h1>
             <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed font-light">
-              Take your move to the next level with Safe Giant. We deliver professional, damage-free moving tools and open a new horizon for your relocation experience.
+              Affordable, Reliable, and Professional—$50 per hour per mover (2-hour minimum).
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 justify-center lg:justify-start">
               <button
                 onClick={scrollToForm}
                 className="px-8 py-4 bg-[#F97316] text-white font-bold rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] hover:scale-105 transition-all duration-300 w-full sm:w-auto"
               >
-                Request a Quote
+                Get a Quote
               </button>
-              <a
-                href="tel:+15551234567"
-                className="px-8 py-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all duration-300 border border-white/20 w-full sm:w-auto"
+              <button
+                onClick={scrollToForm}
+                className="px-8 py-4 bg-white text-[#F97316] font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-gray-50 hover:scale-105 transition-all duration-300 w-full sm:w-auto"
               >
-                Call (555) 123-4567
-              </a>
+                Book Now
+              </button>
             </div>
 
             {/* Trusted Logos Strip (Logisco style) */}

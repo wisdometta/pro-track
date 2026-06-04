@@ -1,16 +1,32 @@
 @import "tailwindcss";
 
+:root {
+  --primary: #1E3A5F;
+  --accent: #F97316;
+  --accent-hover: #ea6c0a;
+
+  font-size: 87.5%;
+
+  @media (min-width: 768px) {
+    font-size: 100%;
+  }
+
+}
+
+@theme {
+  --color-primary: var(---primary);
+  --color-accent: var(---accent);
+  --color-accent-hover: var(---accent-hover);
+}
+
 /* ─── Base font scaling (mobile-first) ─── */
 html {
-  font-size: 87.5%; /* 14px base on mobile */
+
+  font-family: 'Poppins';
   scroll-behavior: smooth;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 100%; /* 16px base on tablet+ */
-  }
-}
+@media (min-width: 768px) {}
 
 /* ─── Smooth scroll offset for fixed nav ─── */
 [id] {

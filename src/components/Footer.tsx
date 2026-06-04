@@ -35,7 +35,6 @@ export default function Footer() {
             <h4 className="text-lg font-bold mb-4">Quick Links</h4>
             <ul className="space-y-3">
               <li><a href="#services" className="text-gray-400 hover:text-white transition-colors text-sm">Our Services</a></li>
-              <li><a href="#why-us" className="text-gray-400 hover:text-white transition-colors text-sm">Why Choose Us</a></li>
               <li><a href="#quote-form" className="text-gray-400 hover:text-white transition-colors text-sm">Get a Free Quote</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a></li>
             </ul>

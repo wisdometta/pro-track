@@ -107,14 +107,14 @@ export default function Services() {
         </div>
 
         {/* Stats Bar */}
-        <div className="mt-16 bg-[#1E3A5F] rounded-3xl p-5 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+        {/* <div className="mt-16 bg-[#1E3A5F] rounded-3xl p-5 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           {STATS.map((stat) => (
             <div key={stat.label} className="text-center p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
               <div className="text-3xl sm:text-4xl font-bold text-[#F97316] mb-2">{stat.number}</div>
               <div className="text-sm text-blue-100 font-medium">{stat.label}</div>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );
