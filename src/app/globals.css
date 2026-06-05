@@ -27,3 +27,15 @@ input[type='number']::-webkit-inner-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+/* ─── Mobile: pad bottom for sticky action bar ─── */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ─── iOS safe-area bottom utility ─── */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -6,22 +6,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 import StepIndicator from './StepIndicator';
 import PricingSummary from './PricingSummary';
-import Step1Contact from './FormSteps/Step1Contact';
-import Step2Details from './FormSteps/Step2Details';
-import Step3Size from './FormSteps/Step3Size';
-import Step4Labor from './FormSteps/Step4Labor';
-import Step5Conditions from './FormSteps/Step5Conditions';
-import Step6Truck from './FormSteps/Step6Truck';
-import Step7Review from './FormSteps/Step7Review';
+import Step1BuildMove from './FormSteps/Step1BuildMove';
+import Step2Logistics from './FormSteps/Step2Logistics';
+import Step3Access from './FormSteps/Step3Access';
+import Step4Quote from './FormSteps/Step4Quote';
+import Step5Contact from './FormSteps/Step5Contact';
 import { stepSchemas, initialValues, FormValues } from '@/lib/validationSchemas';
 import { calculateEstimate, getMoveSizeLabel } from '@/lib/pricingEngine';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 5;
 
-// Replace these with your actual EmailJS credentials
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '';
+const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '';
+const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '';
 
 export default function StepForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -48,34 +45,47 @@ export default function StepForm() {
       movers: values.movers,
       hours: values.hours,
       stairs: values.stairs,
-      hasHeavyItems: values.hasHeavyItems,
+      needTruck: values.needTruck,
+      heavyItems: values.heavyItems,
     });
 
     try {
+      if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
+        throw new Error('EmailJS is not configured properly.');
+      }
+
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
         {
-          from_name: values.fullName,
-          phone: values.phone,
-          email: values.email || 'Not provided',
-          moving_date: values.movingDate,
-          preferred_time: values.preferredTime,
-          pickup_zip: values.pickupZip,
-          dropoff_zip: values.dropoffZip,
-          move_size: getMoveSizeLabel(values.moveSize),
-          movers: values.movers,
-          hours: values.hours,
-          estimated_cost: `$${estimate}`,
-          stairs: values.stairs,
-          heavy_items: values.hasHeavyItems ? values.heavyItemTypes.join(', ') : 'None',
-          truck_needed: values.truckNeeded,
+          title: `New Moving Quote Request from ${values.fullName}`,
+          request_summary: `Move Details:
+- Date: ${values.movingDate} (${values.preferredTime})
+- From ZIP: ${values.pickupZip}
+- To ZIP: ${values.dropoffZip}
+- Size: ${getMoveSizeLabel(values.moveSize)}
+- Movers: ${values.movers}
+- Est. Hours: ${values.hours}
+- Need Truck: ${values.needTruck ? 'Yes' : 'No'}
+- Stairs: ${values.stairs}
+- Elevator: ${values.elevator ? 'Yes' : 'No'}
+- Heavy Items: ${values.heavyItems.length > 0 ? values.heavyItems.join(', ') : 'None'}
+
+Contact Info:
+- Phone: ${values.phone}
+- Email: ${values.email}
+
+Estimated Cost Quoted: $${estimate}
+`,
+          email: values.email,
+          name: values.fullName,
         },
         EMAILJS_PUBLIC_KEY
       );
       setSubmitted(true);
-    } catch {
-      setSubmitError('Something went wrong. Please try again.');
+    } catch (error) {
+      console.error('EmailJS Error:', error);
+      setSubmitError('Failed to send request. Please try calling us instead.');
     } finally {
       setSubmitting(false);
     }
@@ -84,19 +94,15 @@ export default function StepForm() {
   const renderStep = (formik: FormikProps<FormValues>) => {
     switch (currentStep) {
       case 0:
-        return <Step1Contact formik={formik} />;
+        return <Step1BuildMove formik={formik} />;
       case 1:
-        return <Step2Details formik={formik} />;
+        return <Step2Logistics formik={formik} />;
       case 2:
-        return <Step3Size formik={formik} />;
+        return <Step3Access formik={formik} />;
       case 3:
-        return <Step4Labor formik={formik} />;
+        return <Step4Quote formik={formik} />;
       case 4:
-        return <Step5Conditions formik={formik} />;
-      case 5:
-        return <Step6Truck formik={formik} />;
-      case 6:
-        return <Step7Review formik={formik} />;
+        return <Step5Contact formik={formik} />;
       default:
         return null;
     }
@@ -106,10 +112,8 @@ export default function StepForm() {
     const schema = stepSchemas[currentStep];
     try {
       await schema.validate(formik.values, { abortEarly: false });
-      // Clear errors for current step fields
       goNext();
     } catch (err) {
-      // Touch all fields for current step to show errors
       const fieldNames = Object.keys(schema.describe().fields);
       const touchedFields: Record<string, boolean> = {};
       fieldNames.forEach((field) => {
@@ -119,6 +123,13 @@ export default function StepForm() {
       formik.validateForm();
     }
   };
+
+  const handleReset = useCallback(() => {
+    setSubmitted(false);
+    setCurrentStep(0);
+    setDirection(1);
+    setSubmitError('');
+  }, []);
 
   if (submitted) {
     return (
@@ -135,9 +146,15 @@ export default function StepForm() {
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-3">Request Submitted!</h2>
-          <p className="text-gray-600 max-w-sm mx-auto">
-            Thank you! We&apos;ve received your moving request and will contact you shortly to confirm details and provide an accurate estimate.
+          <p className="text-gray-600 max-w-sm mx-auto mb-8">
+            We&apos;ve received your request. Our team will review your information and contact you shortly to confirm availability and provide your final quote.
           </p>
+          <button
+            onClick={handleReset}
+            className="px-8 py-3 bg-[#1E3A5F] text-white font-semibold rounded-xl hover:bg-[#162d4a] transition-colors shadow-sm"
+          >
+            Start a New Request
+          </button>
         </motion.div>
       </section>
     );
@@ -154,10 +171,10 @@ export default function StepForm() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">
-            Request Your <span className="text-[#F97316]">Move</span>
+            Get Your <span className="text-[#F97316]">Moving Quote</span>
           </h2>
           <p className="mt-3 text-gray-500 max-w-lg mx-auto">
-            Complete the form below and we&apos;ll contact you to confirm availability, discuss your move, and provide an accurate estimate.
+            Build your move to see an instant estimate. No commitment required.
           </p>
         </motion.div>
 
@@ -190,13 +207,8 @@ export default function StepForm() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Mobile estimate strip — above nav buttons */}
-                  <div className="lg:hidden">
-                    <PricingSummary values={formik.values} />
-                  </div>
-
                   {/* Navigation */}
-                  <div className="mt-5 flex items-center justify-between gap-3">
+                  <div className="mt-8 flex items-center justify-between gap-3">
                     {currentStep > 0 ? (
                       <button
                         type="button"
@@ -215,7 +227,7 @@ export default function StepForm() {
                         onClick={() => validateAndNext(formik)}
                         className="flex-1 sm:flex-none px-8 py-3 bg-[#F97316] text-white font-semibold rounded-xl hover:bg-[#ea6c0a] transition-colors shadow-sm"
                       >
-                        Continue →
+                        {currentStep === 2 ? 'Calculate My Quote' : currentStep === 3 ? 'Continue to Book' : 'Continue →'}
                       </button>
                     ) : (
                       <button
@@ -245,10 +257,19 @@ export default function StepForm() {
                 </div>
               </div>
 
-              {/* Pricing summary sidebar — desktop only */}
-              <div className="hidden lg:block lg:w-72">
-                <PricingSummary values={formik.values} />
-              </div>
+              {/* Pricing summary sidebar — desktop only. Hidden on Quote and Contact steps. */}
+              {currentStep < 3 && (
+                <div className="hidden lg:block lg:w-72">
+                  <PricingSummary values={formik.values} />
+                </div>
+              )}
+
+              {/* Mobile estimate strip — sits at bottom, hidden on Quote step and Contact step */}
+              {currentStep < 3 && (
+                <div className="lg:hidden">
+                  <PricingSummary values={formik.values} />
+                </div>
+              )}
             </div>
           )}
         </Formik>

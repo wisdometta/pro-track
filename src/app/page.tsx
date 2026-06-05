@@ -1,8 +1,9 @@
 import NavBar from '@/components/NavBar';
 import Hero from '@/components/Hero';
+import QuoteCalculator from '@/components/QuoteCalculator';
 import Services from '@/components/Services';
+import HowItWorks from '@/components/HowItWorks';
 import WhyChooseUs from '@/components/WhyChooseUs';
-import Testimonials from '@/components/Testimonials';
 import StepForm from '@/components/StepForm';
 import Footer from '@/components/Footer';
 import FloatingWidget from '@/components/FloatingWidget';
@@ -12,9 +13,10 @@ export default function Home() {
     <main className="flex-1">
       <NavBar />
       <Hero />
+      <QuoteCalculator />
       <Services />
+      <HowItWorks />
       <WhyChooseUs />
-      <Testimonials />
       <StepForm />
       <Footer />
       <FloatingWidget />

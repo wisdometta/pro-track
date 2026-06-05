@@ -13,10 +13,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Safe Giant Movers — Safe, Reliable Moving Services",
+  title: "Track Pro Movers — Professional, Reliable Moving Services",
   description:
-    "Professional moving services you can count on. Request your move online and receive a free estimate. Licensed, insured, and transparent pricing.",
-  keywords: "moving company, movers, local moving, residential moving, packing, loading",
+    "Professional moving services you can count on. Request your move online and receive a free estimate. Licensed, insured, and transparent pricing. A Track Pro Services company.",
+  keywords: "Track Pro Movers, moving company, movers, local moving, residential moving, packing, loading, Track Pro Services",
 };
 
 export default function RootLayout({

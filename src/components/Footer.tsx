@@ -10,9 +10,9 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 bg-[#F97316] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                SG
+                TP
               </div>
-              <span className="font-bold text-xl tracking-tight">Safe Giant Movers</span>
+              <span className="font-bold text-xl tracking-tight">Track Pro Movers</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Professional, reliable, and stress-free moving services for homes and businesses. We handle the heavy lifting so you don&apos;t have to.
@@ -51,7 +51,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#F97316]">✉️</span>
-                <a href="mailto:hello@safegiantmovers.com" className="text-gray-400 hover:text-white transition-colors text-sm">hello@safegiantmovers.com</a>
+                <span className="text-gray-400 text-sm">Contact details coming soon</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#F97316]">⏰</span>
@@ -76,7 +76,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500">
-            &copy; 2026 Safe Giant Movers. All rights reserved.
+            &copy; 2026 Track Pro Movers. All rights reserved. A <span className="text-gray-400">Track Pro Services</span> company.
           </p>
           <div className="flex items-center gap-6">
             <span className="text-xs text-gray-500">Licensed</span>
