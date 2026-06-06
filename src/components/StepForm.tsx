@@ -1,20 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Formik, FormikProps } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import { motion, AnimatePresence } from 'framer-motion';
 import emailjs from '@emailjs/browser';
-import StepIndicator from './StepIndicator';
-import PricingSummary from './PricingSummary';
-import Step1BuildMove from './FormSteps/Step1BuildMove';
-import Step2Logistics from './FormSteps/Step2Logistics';
-import Step3Access from './FormSteps/Step3Access';
-import Step4Quote from './FormSteps/Step4Quote';
-import Step5Contact from './FormSteps/Step5Contact';
-import { stepSchemas, initialValues, FormValues } from '@/lib/validationSchemas';
-import { calculateEstimate, getMoveSizeLabel } from '@/lib/pricingEngine';
-
-const TOTAL_STEPS = 5;
+import { initialValues, estimateSchema, contactSchema, FormValues } from '@/lib/validationSchemas';
+import { calculateEstimate } from '@/lib/pricingEngine';
 
 const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '';
 const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '';
@@ -29,25 +20,19 @@ export default function StepForm() {
 
   const goNext = useCallback(() => {
     setDirection(1);
-    setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
+    setCurrentStep(1);
   }, []);
 
   const goBack = useCallback(() => {
     setDirection(-1);
-    setCurrentStep((s) => Math.max(s - 1, 0));
+    setCurrentStep(0);
   }, []);
 
   const handleSubmit = async (values: FormValues) => {
     setSubmitting(true);
     setSubmitError('');
 
-    const estimate = calculateEstimate({
-      movers: values.movers,
-      hours: values.hours,
-      stairs: values.stairs,
-      needTruck: values.needTruck,
-      heavyItems: values.heavyItems,
-    });
+    const estimate = calculateEstimate(values.startLocation, values.endLocation, values.movers);
 
     try {
       if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
@@ -58,24 +43,20 @@ export default function StepForm() {
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
         {
-          title: `New Moving Quote Request from ${values.fullName}`,
+          title: `New Booking Request from ${values.fullName}`,
           request_summary: `Move Details:
-- Date: ${values.movingDate} (${values.preferredTime})
-- From ZIP: ${values.pickupZip}
-- To ZIP: ${values.dropoffZip}
-- Size: ${getMoveSizeLabel(values.moveSize)}
+- Date: ${values.movingDate}
+- From: ${values.startLocation}
+- To: ${values.endLocation}
 - Movers: ${values.movers}
-- Est. Hours: ${values.hours}
-- Need Truck: ${values.needTruck ? 'Yes' : 'No'}
-- Stairs: ${values.stairs}
-- Elevator: ${values.elevator ? 'Yes' : 'No'}
-- Heavy Items: ${values.heavyItems.length > 0 ? values.heavyItems.join(', ') : 'None'}
+- Est. Distance: ~${estimate?.distance} miles
+- Est. Duration: ${estimate?.hours} hours
 
 Contact Info:
 - Phone: ${values.phone}
 - Email: ${values.email}
 
-Estimated Cost Quoted: $${estimate}
+Total Estimated Cost: $${estimate?.total}
 `,
           email: values.email,
           name: values.fullName,
@@ -91,34 +72,12 @@ Estimated Cost Quoted: $${estimate}
     }
   };
 
-  const renderStep = (formik: FormikProps<FormValues>) => {
-    switch (currentStep) {
-      case 0:
-        return <Step1BuildMove formik={formik} />;
-      case 1:
-        return <Step2Logistics formik={formik} />;
-      case 2:
-        return <Step3Access formik={formik} />;
-      case 3:
-        return <Step4Quote formik={formik} />;
-      case 4:
-        return <Step5Contact formik={formik} />;
-      default:
-        return null;
-    }
-  };
-
   const validateAndNext = async (formik: FormikProps<FormValues>) => {
-    const schema = stepSchemas[currentStep];
     try {
-      await schema.validate(formik.values, { abortEarly: false });
+      await estimateSchema.validate(formik.values, { abortEarly: false });
       goNext();
-    } catch (err) {
-      const fieldNames = Object.keys(schema.describe().fields);
-      const touchedFields: Record<string, boolean> = {};
-      fieldNames.forEach((field) => {
-        touchedFields[field] = true;
-      });
+    } catch (err: any) {
+      const touchedFields: Record<string, boolean> = { startLocation: true, endLocation: true, movers: true };
       formik.setTouched({ ...formik.touched, ...touchedFields });
       formik.validateForm();
     }
@@ -145,9 +104,9 @@ Estimated Cost Quoted: $${estimate}
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Request Submitted!</h2>
+          <h2 className="text-3xl font-bold text-[#1E3A5F] mb-3">Booking Requested!</h2>
           <p className="text-gray-600 max-w-sm mx-auto mb-8">
-            We&apos;ve received your request. Our team will review your information and contact you shortly to confirm availability and provide your final quote.
+            We&apos;ve received your request. Our team will review your information and contact you shortly to confirm your moving date and exact details.
           </p>
           <button
             onClick={handleReset}
@@ -162,7 +121,7 @@ Estimated Cost Quoted: $${estimate}
 
   return (
     <section id="quote-form" className="py-12 px-4 sm:px-6 bg-gray-50">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <motion.div
           className="text-center mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -171,107 +130,211 @@ Estimated Cost Quoted: $${estimate}
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">
-            Get Your <span className="text-[#F97316]">Moving Quote</span>
+            Book Your <span className="text-[#F97316]">Move</span>
           </h2>
           <p className="mt-3 text-gray-500 max-w-lg mx-auto">
-            Build your move to see an instant estimate. No commitment required.
+            Get your instant transparent quote and lock in your moving date.
           </p>
         </motion.div>
 
         <Formik
           initialValues={initialValues}
-          validationSchema={stepSchemas[currentStep]}
+          validationSchema={currentStep === 0 ? estimateSchema : contactSchema}
           onSubmit={handleSubmit}
           validateOnChange={false}
           validateOnBlur={true}
         >
-          {(formik) => (
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Form area */}
-              <div className="flex-1 max-w-2xl mx-auto lg:mx-0 w-full">
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-8">
-                  <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+          {(formik) => {
+            const estimate = calculateEstimate(formik.values.startLocation, formik.values.endLocation, formik.values.movers);
 
-                  <div className="mt-4">
-                    <AnimatePresence mode="wait" custom={direction}>
-                      <motion.div
-                        key={currentStep}
-                        custom={direction}
-                        initial={{ opacity: 0, x: direction * 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: direction * -30 }}
-                        transition={{ duration: 0.25, ease: 'easeInOut' }}
-                      >
-                        {renderStep(formik)}
-                      </motion.div>
-                    </AnimatePresence>
+            return (
+              <Form className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden p-6 sm:p-10">
+                {/* Simple 2-Step Indicator */}
+                <div className="flex items-center justify-center gap-4 mb-8">
+                  <div className={`flex items-center gap-2 ${currentStep >= 0 ? 'text-[#F97316]' : 'text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= 0 ? 'bg-[#F97316] text-white' : 'bg-gray-100 text-gray-400'}`}>1</div>
+                    <span className="font-semibold text-sm hidden sm:block">Estimate</span>
                   </div>
+                  <div className={`w-12 h-0.5 ${currentStep >= 1 ? 'bg-[#F97316]' : 'bg-gray-200'}`} />
+                  <div className={`flex items-center gap-2 ${currentStep >= 1 ? 'text-[#F97316]' : 'text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= 1 ? 'bg-[#F97316] text-white' : 'bg-gray-100 text-gray-400'}`}>2</div>
+                    <span className="font-semibold text-sm hidden sm:block">Book</span>
+                  </div>
+                </div>
 
-                  {/* Navigation */}
-                  <div className="mt-8 flex items-center justify-between gap-3">
-                    {currentStep > 0 ? (
-                      <button
-                        type="button"
-                        onClick={goBack}
-                        className="px-5 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
-                      >
-                        ← Back
-                      </button>
-                    ) : (
-                      <div />
-                    )}
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={currentStep}
+                    custom={direction}
+                    initial={{ opacity: 0, x: direction * 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: direction * -30 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  >
+                    {/* STEP 1: Locations & Estimate */}
+                    {currentStep === 0 && (
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Starting Location</label>
+                            <Field
+                              name="startLocation"
+                              placeholder="e.g. 123 Main St, City, Zip"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 outline-none transition-all"
+                            />
+                            <ErrorMessage name="startLocation" component="div" className="text-red-500 text-xs mt-1" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Ending Location</label>
+                            <Field
+                              name="endLocation"
+                              placeholder="e.g. 456 Oak Ave, City, Zip"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 outline-none transition-all"
+                            />
+                            <ErrorMessage name="endLocation" component="div" className="text-red-500 text-xs mt-1" />
+                          </div>
+                        </div>
 
-                    {currentStep < TOTAL_STEPS - 1 ? (
-                      <button
-                        type="button"
-                        onClick={() => validateAndNext(formik)}
-                        className="flex-1 sm:flex-none px-8 py-3 bg-[#F97316] text-white font-semibold rounded-xl hover:bg-[#ea6c0a] transition-colors shadow-sm"
-                      >
-                        {currentStep === 2 ? 'Calculate My Quote' : currentStep === 3 ? 'Continue to Book' : 'Continue →'}
-                      </button>
-                    ) : (
-                      <button
-                        type="submit"
-                        onClick={() => formik.handleSubmit()}
-                        disabled={submitting}
-                        className="flex-1 sm:flex-none px-8 py-3 bg-[#F97316] text-white font-semibold rounded-xl hover:bg-[#ea6c0a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {submitting ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            Submitting...
-                          </span>
-                        ) : (
-                          'Request My Move'
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Number of Movers</label>
+                          <div className="grid grid-cols-3 gap-3">
+                            {[2, 3, 4].map((num) => (
+                              <button
+                                type="button"
+                                key={num}
+                                onClick={() => formik.setFieldValue('movers', num)}
+                                className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all duration-200 ${
+                                  formik.values.movers === num
+                                    ? 'border-[#F97316] bg-[#F97316]/5'
+                                    : 'border-gray-100 hover:border-gray-200'
+                                }`}
+                              >
+                                <span className={`font-bold ${formik.values.movers === num ? 'text-[#F97316]' : 'text-[#1E3A5F]'}`}>{num} Movers</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {estimate && (
+                          <div className="bg-[#1E3A5F] rounded-2xl p-6 text-white mt-6 shadow-md">
+                            <h4 className="text-blue-200 text-sm font-semibold mb-2 uppercase tracking-wide">Instant Estimate</h4>
+                            <div className="flex items-baseline gap-2 mb-4">
+                              <span className="text-5xl font-bold">${estimate.total}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm text-blue-100">
+                              <div>
+                                <span className="block text-blue-300 text-xs">Estimated Hours</span>
+                                <span className="font-semibold">{estimate.hours} hours</span>
+                              </div>
+                              <div>
+                                <span className="block text-blue-300 text-xs">Hourly Rate</span>
+                                <span className="font-semibold">${estimate.movers * 50}/hr</span>
+                              </div>
+                            </div>
+                          </div>
                         )}
-                      </button>
+                      </div>
                     )}
-                  </div>
 
-                  {submitError && (
-                    <p className="mt-3 text-center text-sm text-red-500">{submitError}</p>
+                    {/* STEP 2: Contact Info */}
+                    {currentStep === 1 && (
+                      <div className="space-y-6">
+                        {estimate && (
+                          <div className="bg-[#F97316]/10 border border-[#F97316]/20 rounded-xl p-4 mb-6 flex justify-between items-center">
+                            <div>
+                              <p className="text-sm text-[#F97316] font-bold">Your Estimate</p>
+                              <p className="text-xs text-gray-600">From {formik.values.startLocation} to {formik.values.endLocation}</p>
+                            </div>
+                            <span className="text-2xl font-bold text-[#1E3A5F]">${estimate.total}</span>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Full Name</label>
+                            <Field
+                              name="fullName"
+                              placeholder="John Doe"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] outline-none transition-all"
+                            />
+                            <ErrorMessage name="fullName" component="div" className="text-red-500 text-xs mt-1" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Moving Date</label>
+                            <Field
+                              name="movingDate"
+                              type="date"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] outline-none transition-all text-[#1E3A5F]"
+                            />
+                            <ErrorMessage name="movingDate" component="div" className="text-red-500 text-xs mt-1" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
+                            <Field
+                              name="email"
+                              type="email"
+                              placeholder="john@example.com"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] outline-none transition-all"
+                            />
+                            <ErrorMessage name="email" component="div" className="text-red-500 text-xs mt-1" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Phone Number</label>
+                            <Field
+                              name="phone"
+                              placeholder="(555) 123-4567"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] outline-none transition-all"
+                            />
+                            <ErrorMessage name="phone" component="div" className="text-red-500 text-xs mt-1" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Navigation */}
+                <div className="mt-10 flex items-center justify-between gap-3 pt-6 border-t border-gray-100">
+                  {currentStep === 1 ? (
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="px-6 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+
+                  {currentStep === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => validateAndNext(formik)}
+                      className="flex-1 sm:flex-none px-8 py-3 bg-[#F97316] text-white font-semibold rounded-xl hover:bg-[#ea6c0a] transition-colors shadow-sm"
+                    >
+                      Continue to Book →
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 sm:flex-none px-8 py-3 bg-[#F97316] text-white font-semibold rounded-xl hover:bg-[#ea6c0a] transition-colors disabled:opacity-50 flex justify-center"
+                    >
+                      {submitting ? 'Submitting...' : 'Request My Move'}
+                    </button>
                   )}
                 </div>
-              </div>
 
-              {/* Pricing summary sidebar — desktop only. Hidden on Quote and Contact steps. */}
-              {currentStep < 3 && (
-                <div className="hidden lg:block lg:w-72">
-                  <PricingSummary values={formik.values} />
-                </div>
-              )}
-
-              {/* Mobile estimate strip — sits at bottom, hidden on Quote step and Contact step */}
-              {currentStep < 3 && (
-                <div className="lg:hidden">
-                  <PricingSummary values={formik.values} />
-                </div>
-              )}
-            </div>
-          )}
+                {submitError && (
+                  <p className="mt-4 text-center text-sm text-red-500 bg-red-50 p-3 rounded-lg">{submitError}</p>
+                )}
+              </Form>
+            );
+          }}
         </Formik>
       </div>
     </section>

@@ -12,7 +12,7 @@ export default function Footer() {
               <div className="w-9 h-9 bg-[#F97316] rounded-lg flex items-center justify-center text-white font-bold text-sm">
                 TP
               </div>
-              <span className="font-bold text-xl tracking-tight">Track Pro Movers</span>
+              <span className="font-bold text-xl tracking-tight">Track Pro Movers™</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Professional, reliable, and stress-free moving services for homes and businesses. We handle the heavy lifting so you don&apos;t have to.
@@ -37,7 +37,8 @@ export default function Footer() {
               <li><a href="#services" className="text-gray-400 hover:text-white transition-colors text-sm">Our Services</a></li>
               <li><a href="#why-us" className="text-gray-400 hover:text-white transition-colors text-sm">Why Choose Us</a></li>
               <li><a href="#quote-form" className="text-gray-400 hover:text-white transition-colors text-sm">Get a Free Quote</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a></li>
+              <li><a href="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a></li>
+              <li><a href="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a></li>
             </ul>
           </div>
 
@@ -51,7 +52,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#F97316]">✉️</span>
-                <span className="text-gray-400 text-sm">Contact details coming soon</span>
+                <a href="mailto:info@trackpromovers.com" className="text-gray-400 hover:text-white transition-colors text-sm">info@trackpromovers.com</a>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#F97316]">⏰</span>
@@ -76,7 +77,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500">
-            &copy; 2026 Track Pro Movers. All rights reserved. A <span className="text-gray-400">Track Pro Services</span> company.
+            &copy; 2026 Track Pro Movers&trade;. All rights reserved. A <span className="text-gray-400">Track Pro Services</span> company.
           </p>
           <div className="flex items-center gap-6">
             <span className="text-xs text-gray-500">Licensed</span>

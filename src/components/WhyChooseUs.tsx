@@ -64,7 +64,7 @@ export default function WhyChooseUs() {
             Why Choose Us
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">
-            Why Customers Choose Safe Giant Movers
+            Why Customers Choose Track Pro Movers™
           </h2>
           <p className="mt-4 text-gray-500 max-w-xl mx-auto text-base">
             We don&apos;t just move boxes — we move your life with care, speed, and complete transparency.
