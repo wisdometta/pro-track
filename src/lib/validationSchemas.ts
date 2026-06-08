@@ -5,7 +5,8 @@ const phoneRegex = /^\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})$/;
 export const estimateSchema = Yup.object({
   startLocation: Yup.string().required('Starting location is required'),
   endLocation: Yup.string().required('Ending location is required'),
-  movers: Yup.number().min(2).max(4).required('Number of movers is required'),
+  movers: Yup.number().min(1).max(10).required('Number of movers is required'),
+  hours: Yup.number().min(1).max(24).required('Estimated hours are required'),
 });
 
 export const contactSchema = Yup.object({
@@ -21,6 +22,7 @@ export interface FormValues {
   startLocation: string;
   endLocation: string;
   movers: number;
+  hours: number;
   fullName: string;
   phone: string;
   email: string;
@@ -31,6 +33,7 @@ export const initialValues: FormValues = {
   startLocation: '',
   endLocation: '',
   movers: 2,
+  hours: 2,
   fullName: '',
   phone: '',
   email: '',

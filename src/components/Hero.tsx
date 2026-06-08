@@ -19,7 +19,7 @@ export default function Hero() {
         {/* Background image */}
         <Image
           src="/hero-movers-track-pro.png"
-          alt="Track Pro Movers™ professional moving company with truck and movers actively packing"
+          alt="Track Pro Movers LLC professional moving company with truck and movers actively packing"
           fill
           priority
           quality={75}
@@ -42,13 +42,15 @@ export default function Hero() {
           >
             {/* Badge */}
             <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-[#F97316] font-semibold text-sm mb-6 border border-white/20 tracking-wider uppercase">
-              ✦ Track Pro Movers™
+              ✦ Track Pro Movers <span className="text-[10px] opacity-70 font-medium tracking-normal ml-0.5">LLC</span>
             </div>
 
             {/* Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight mb-5">
               Welcome to{' '}
-              <span className="text-[#F97316]">Track Pro Movers™</span>
+              <span className="text-[#F97316]">
+                Track Pro Movers<span className="text-lg sm:text-xl lg:text-2xl font-medium opacity-70 tracking-normal ml-1.5 align-baseline">LLC</span>
+              </span>
             </h1>
 
             {/* Subtext */}
@@ -79,7 +81,7 @@ export default function Hero() {
                 <svg className="w-5 h-5 text-[#F97316]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-white text-sm font-semibold">From $50/mover/hr</span>
+                <span className="text-white text-sm font-semibold">$50 per mover / hour</span>
               </div>
               <div className="flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-md rounded-lg px-4 py-2.5 shadow-sm">
                 <svg className="w-5 h-5 text-[#F97316]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

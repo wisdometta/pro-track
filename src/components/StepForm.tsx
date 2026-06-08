@@ -32,7 +32,7 @@ export default function StepForm() {
     setSubmitting(true);
     setSubmitError('');
 
-    const estimate = calculateEstimate(values.startLocation, values.endLocation, values.movers);
+    const estimate = calculateEstimate(values.hours, values.movers);
 
     try {
       if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
@@ -49,7 +49,6 @@ export default function StepForm() {
 - From: ${values.startLocation}
 - To: ${values.endLocation}
 - Movers: ${values.movers}
-- Est. Distance: ~${estimate?.distance} miles
 - Est. Duration: ${estimate?.hours} hours
 
 Contact Info:
@@ -77,7 +76,7 @@ Total Estimated Cost: $${estimate?.total}
       await estimateSchema.validate(formik.values, { abortEarly: false });
       goNext();
     } catch (err: any) {
-      const touchedFields: Record<string, boolean> = { startLocation: true, endLocation: true, movers: true };
+      const touchedFields: Record<string, boolean> = { startLocation: true, endLocation: true, movers: true, hours: true };
       formik.setTouched({ ...formik.touched, ...touchedFields });
       formik.validateForm();
     }
@@ -145,7 +144,7 @@ Total Estimated Cost: $${estimate?.total}
           validateOnBlur={true}
         >
           {(formik) => {
-            const estimate = calculateEstimate(formik.values.startLocation, formik.values.endLocation, formik.values.movers);
+            const estimate = calculateEstimate(formik.values.hours, formik.values.movers);
 
             return (
               <Form className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden p-6 sm:p-10">
@@ -195,23 +194,61 @@ Total Estimated Cost: $${estimate?.total}
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Number of Movers</label>
-                          <div className="grid grid-cols-3 gap-3">
-                            {[2, 3, 4].map((num) => (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Number of Movers</label>
+                            <div className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                               <button
                                 type="button"
-                                key={num}
-                                onClick={() => formik.setFieldValue('movers', num)}
-                                className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all duration-200 ${
-                                  formik.values.movers === num
-                                    ? 'border-[#F97316] bg-[#F97316]/5'
-                                    : 'border-gray-100 hover:border-gray-200'
-                                }`}
+                                onClick={() => formik.setFieldValue('movers', Math.max(1, formik.values.movers - 1))}
+                                disabled={formik.values.movers <= 1}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 border border-gray-200 text-[#1E3A5F] hover:bg-gray-100 disabled:opacity-30 transition-all active:scale-95"
                               >
-                                <span className={`font-bold ${formik.values.movers === num ? 'text-[#F97316]' : 'text-[#1E3A5F]'}`}>{num} Movers</span>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
                               </button>
-                            ))}
+                              
+                              <div className="flex flex-col items-center">
+                                <span className="text-2xl font-black text-[#1E3A5F]">{formik.values.movers}</span>
+                                <span className="text-[10px] font-bold text-[#F97316] uppercase tracking-widest">Movers</span>
+                              </div>
+                              
+                              <button
+                                type="button"
+                                onClick={() => formik.setFieldValue('movers', Math.min(10, formik.values.movers + 1))}
+                                disabled={formik.values.movers >= 10}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-[#F97316]/10 border border-[#F97316]/20 text-[#F97316] hover:bg-[#F97316]/20 disabled:opacity-30 transition-all active:scale-95"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Estimated Hours</label>
+                            <div className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                              <button
+                                type="button"
+                                onClick={() => formik.setFieldValue('hours', Math.max(1, formik.values.hours - 1))}
+                                disabled={formik.values.hours <= 1}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 border border-gray-200 text-[#1E3A5F] hover:bg-gray-100 disabled:opacity-30 transition-all active:scale-95"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                              </button>
+                              
+                              <div className="flex flex-col items-center">
+                                <span className="text-2xl font-black text-[#1E3A5F]">{formik.values.hours}</span>
+                                <span className="text-[10px] font-bold text-[#F97316] uppercase tracking-widest">Hours</span>
+                              </div>
+                              
+                              <button
+                                type="button"
+                                onClick={() => formik.setFieldValue('hours', Math.min(24, formik.values.hours + 1))}
+                                disabled={formik.values.hours >= 24}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-[#F97316]/10 border border-[#F97316]/20 text-[#F97316] hover:bg-[#F97316]/20 disabled:opacity-30 transition-all active:scale-95"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                              </button>
+                            </div>
                           </div>
                         </div>
 
@@ -221,7 +258,7 @@ Total Estimated Cost: $${estimate?.total}
                             <div className="flex items-baseline gap-2 mb-4">
                               <span className="text-5xl font-bold">${estimate.total}</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm text-blue-100">
+                            <div className="grid grid-cols-2 gap-4 text-sm text-blue-100 mb-6">
                               <div>
                                 <span className="block text-blue-300 text-xs">Estimated Hours</span>
                                 <span className="font-semibold">{estimate.hours} hours</span>
@@ -229,6 +266,19 @@ Total Estimated Cost: $${estimate?.total}
                               <div>
                                 <span className="block text-blue-300 text-xs">Hourly Rate</span>
                                 <span className="font-semibold">${estimate.movers * 50}/hr</span>
+                              </div>
+                            </div>
+                            
+                            {/* ─── Transparency Banner ─── */}
+                            <div className="p-3 bg-blue-400/10 border border-blue-400/20 rounded-xl flex items-start gap-3">
+                              <div className="bg-blue-400/20 text-blue-300 p-1.5 rounded-full shrink-0">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-white mb-1">100% Transparent Pricing — No Hidden Charges</h4>
+                                <p className="text-[11px] text-blue-200/80 leading-relaxed">What you see is what you pay. No distance fees or surprise surcharges. Need help? <a href="tel:+15551234567" className="text-white font-bold underline">Call us</a>.</p>
                               </div>
                             </div>
                           </div>

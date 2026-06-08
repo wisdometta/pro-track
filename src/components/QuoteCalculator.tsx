@@ -8,55 +8,23 @@ const MINIMUM_HOURS = 2;
 const PHONE = '+15551234567';
 const EMAIL_ADDRESS = 'info@trackpromovers.com';
 
-// A simple deterministic hash function to mock distance between two strings
-const mockDistance = (str1: string, str2: string) => {
-  const combined = (str1 + str2).toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (!combined) return 0;
-  let hash = 0;
-  for (let i = 0; i < combined.length; i++) {
-    hash = ((hash << 5) - hash) + combined.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
-  }
-  return Math.abs(hash) % 95 + 5; // 5 to 100 miles
-};
+import { calculateEstimate } from '@/lib/pricingEngine';
 
 export default function QuoteCalculator() {
-  const [startLocation, setStartLocation] = useState('');
-  const [endLocation, setEndLocation] = useState('');
+  const [hours, setHours] = useState(2);
   const [movers, setMovers] = useState(2);
   const [showResult, setShowResult] = useState(false);
 
   const estimate = useMemo(() => {
-    if (!startLocation || !endLocation) return null;
-    
-    const distance = mockDistance(startLocation, endLocation);
-    // Rough estimate: 2 hours base loading/unloading + driving time (approx 30mph)
-    const rawHours = 2 + (distance / 30);
-    // Round to nearest half hour
-    let hours = Math.round(rawHours * 2) / 2;
-    // Enforce minimum 2 hours
-    hours = Math.max(MINIMUM_HOURS, hours);
-    
-    const total = movers * RATE_PER_MOVER_PER_HOUR * hours;
-    
-    return {
-      distance,
-      hours,
-      total,
-      movers
-    };
-  }, [startLocation, endLocation, movers]);
+    return calculateEstimate(hours, movers);
+  }, [hours, movers]);
 
   const handleCalculate = () => {
-    if (!startLocation.trim() || !endLocation.trim()) {
-      alert('Please enter both starting and ending locations.');
-      return;
-    }
     setShowResult(true);
   };
 
   const quoteMessage = estimate 
-    ? `Hi! I used the quote calculator and got an estimate of $${estimate.total} for a move from ${startLocation} to ${endLocation} (${estimate.movers} movers, ~${estimate.hours} hours). I'd like to book!`
+    ? `Hi! I used the quote calculator and got an estimate of $${estimate.total} (${estimate.movers} movers, ${estimate.hours} hours). I'd like to book or learn more!`
     : '';
   
   const emailUrl = `mailto:${EMAIL_ADDRESS}?subject=${encodeURIComponent('Quote Request')}&body=${encodeURIComponent(quoteMessage)}`;
@@ -86,35 +54,41 @@ export default function QuoteCalculator() {
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="p-6 sm:p-10">
             
-            {/* ─── Step 1: Locations ─── */}
+            {/* ─── Step 1: Hours ─── */}
             <div className="mb-8">
               <h3 className="text-sm font-bold text-[#1E3A5F] uppercase tracking-wider mb-4 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-[#F97316] text-white text-xs font-bold flex items-center justify-center">
                   1
                 </span>
-                Where are you moving?
+                Estimated Hours
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Starting Location</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. 123 Main St, City, Zip"
-                    value={startLocation}
-                    onChange={(e) => { setStartLocation(e.target.value); setShowResult(false); }}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 outline-none transition-all"
-                  />
+              <div className="flex items-center justify-center gap-6 sm:gap-8 bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
+                <button
+                  onClick={() => { setHours(Math.max(1, hours - 1)); setShowResult(false); }}
+                  disabled={hours <= 1}
+                  className="w-14 h-14 rounded-full flex items-center justify-center bg-gray-50 border border-gray-200 text-[#1E3A5F] hover:bg-gray-100 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
+                  aria-label="Decrease hours"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                  </svg>
+                </button>
+                
+                <div className="flex flex-col items-center min-w-[120px]">
+                  <span className="text-4xl font-black text-[#1E3A5F] mb-1">{hours}</span>
+                  <span className="text-sm font-bold text-[#F97316] uppercase tracking-widest">Hours</span>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Ending Location</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. 456 Oak Ave, City, Zip"
-                    value={endLocation}
-                    onChange={(e) => { setEndLocation(e.target.value); setShowResult(false); }}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 outline-none transition-all"
-                  />
-                </div>
+                
+                <button
+                  onClick={() => { setHours(Math.min(24, hours + 1)); setShowResult(false); }}
+                  disabled={hours >= 24}
+                  className="w-14 h-14 rounded-full flex items-center justify-center bg-[#F97316]/10 border border-[#F97316]/20 text-[#F97316] hover:bg-[#F97316]/20 hover:border-[#F97316]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
+                  aria-label="Increase hours"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -125,36 +99,48 @@ export default function QuoteCalculator() {
                   2
                 </span>
                 Number of Movers
-                <span className="text-xs font-normal text-gray-400 normal-case">(Default: 2)</span>
               </h3>
               
-              <div className="grid grid-cols-3 gap-3">
-                {[2, 3, 4].map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => { setMovers(num); setShowResult(false); }}
-                    className={`relative flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
-                      movers === num
-                        ? 'border-[#F97316] bg-[#F97316]/5 shadow-md'
-                        : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
-                    }`}
-                  >
-                    <span className="text-2xl mb-1">💪</span>
-                    <span className={`text-sm font-bold leading-tight ${movers === num ? 'text-[#F97316]' : 'text-[#1E3A5F]'}`}>
-                      {num} Movers
-                    </span>
-                    {movers === num && (
-                      <motion.div
-                        layoutId="mover-check"
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#F97316] flex items-center justify-center"
-                      >
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                      </motion.div>
-                    )}
-                  </button>
-                ))}
+              <div className="flex items-center justify-center gap-6 sm:gap-8 bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
+                <button
+                  onClick={() => { setMovers(Math.max(1, movers - 1)); setShowResult(false); }}
+                  disabled={movers <= 1}
+                  className="w-14 h-14 rounded-full flex items-center justify-center bg-gray-50 border border-gray-200 text-[#1E3A5F] hover:bg-gray-100 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
+                  aria-label="Decrease movers"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                  </svg>
+                </button>
+                
+                <div className="flex flex-col items-center min-w-[120px]">
+                  <span className="text-4xl font-black text-[#1E3A5F] mb-1">{movers}</span>
+                  <span className="text-sm font-bold text-[#F97316] uppercase tracking-widest">Movers</span>
+                </div>
+                
+                <button
+                  onClick={() => { setMovers(Math.min(10, movers + 1)); setShowResult(false); }}
+                  disabled={movers >= 10}
+                  className="w-14 h-14 rounded-full flex items-center justify-center bg-[#F97316]/10 border border-[#F97316]/20 text-[#F97316] hover:bg-[#F97316]/20 hover:border-[#F97316]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
+                  aria-label="Increase movers"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* ─── Transparency Banner ─── */}
+            <div className="mb-8 p-4 bg-[#10b981]/10 border border-[#10b981]/20 rounded-2xl flex items-start gap-4">
+              <div className="bg-[#10b981] text-white p-2 rounded-full shrink-0">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#1E3A5F]">100% Transparent Pricing — No Hidden Charges</h4>
+                <p className="text-sm text-gray-600 mt-1">What you see is what you pay. We do not charge distance fees, travel fees, or any surprise surcharges. Have questions or need a custom quote? <a href={`tel:${PHONE}`} className="text-[#F97316] font-bold hover:underline">Give us a call</a>.</p>
               </div>
             </div>
 
@@ -207,11 +193,6 @@ export default function QuoteCalculator() {
                     </div>
                     <div className="border-t border-white/10 my-1" />
                     <div className="flex items-center justify-between py-2 text-sm">
-                      <span className="text-blue-200">Est. Distance</span>
-                      <span className="text-white font-semibold">~{estimate.distance} miles</span>
-                    </div>
-                    <div className="border-t border-white/10 my-1" />
-                    <div className="flex items-center justify-between py-2 text-sm">
                       <span className="text-blue-200">Hourly Rate ({estimate.movers} movers)</span>
                       <span className="text-white font-semibold">${estimate.movers * RATE_PER_MOVER_PER_HOUR}/hr</span>
                     </div>
@@ -261,7 +242,7 @@ export default function QuoteCalculator() {
 
                   {/* Disclaimer */}
                   <p className="text-blue-300/40 text-xs text-center mt-6">
-                    * Minimum 2 hours enforced. This is an estimate based on average driving speeds and does not account for traffic or complex building access.
+                    * If you have any questions or need further explanation of this estimate, please don't hesitate to give us a call!
                   </p>
                 </div>
               </motion.div>
